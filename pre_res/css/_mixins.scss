@@ -1,0 +1,85 @@
+/*
+ * USAGE EXAMPLES:
+ *
+ * @include transition(width .2s linear);
+ * @include transition(color .2s linear, background-color .3s linear);
+ * @include transition(color .2s linear, background-color .3s linear, width .5s linear);
+ * etc...
+ *
+ * */
+@mixin transition($defs...) {
+  -webkit-transition: $defs; -moz-transition: $defs; -ms-transition: $defs; -o-transition: $defs; transition: $defs;
+}
+
+/*
+When you have buttons that users are likely to double-click on,
+you don't want the double-clicking to select a bunch of random things.
+Apply ...
+
+  @include noselect()
+
+ ... to add the styles to disable the selection on something like a button.
+
+*/
+@mixin noselect(){
+  -moz-user-select:-moz-none; -moz-user-select:none; -o-user-select:none; -khtml-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none;
+}
+
+/*
+Usage:
+
+  @include xbreak(700px){
+    ...
+  }
+
+*/
+@mixin xbreak($bp){
+    @media screen and (max-width: $bp) {
+      @content;
+    }
+}
+
+@mixin ybreak($bp){
+    @media screen and (max-height: $bp) {
+      @content;
+    }
+}
+
+/*
+Usage:
+
+  @include borderbox()
+
+*/
+@mixin borderbox {
+    box-sizing:border-box; -moz-box-sizing:border-box;
+}
+
+/*
+Usage:
+
+  @include triangle(up/right/down/left, width, height, color)
+
+    Example:
+
+  :after{
+    @include triangle(down, 10px, 15px, #ccc);
+  }
+
+*/
+@mixin triangle($direction, $width, $height, $color) {
+  @if $direction == up {
+    border-width:0 ($width/2) $height ($width/2);
+    border-color:transparent transparent $color transparent;
+  } @else if $direction == right {
+    border-width: ($height/2) 0 ($height/2) $width;
+    border-color: transparent transparent transparent $color;
+  } @else if $direction == down {
+    border-width:$height ($width/2) 0 ($width/2);
+    border-color:$color transparent transparent transparent;
+  } @else if $direction == left{
+    border-width:($height/2) $width ($height/2) 0;
+    border-color:transparent $color transparent transparent;
+  }
+  content:'';width:0;height:0;border-style:solid;
+}
