@@ -78,7 +78,7 @@ var entityListContainer = (function () {
 
 
 
-                  
+
                 }
               }
             }
@@ -120,7 +120,7 @@ var entityListContainer = (function () {
                   var headControls=entities_head.find('.controls:first');
                   headControls.append('<div class="control" name="'+args['key']+'"></div>');
                   var headControl=headControls.children('.control:last');
-                  headControl.append('<div class="search"><span class="go"></span><input type="text" placeholder="Search for '+args['name']+'" /><span class="cancel"></span></div>');
+                  headControl.append('<div class="search"><input type="text" placeholder="Search for '+args['name']+'" /><span class="cancel"></span><span class="go"></span></div>');
                   headControl.append('<div class="actions"><span class="add">Add '+args['name']+'</span></div>');
                   //search
                   var searchGoBtn=headControl.find('.search .go:first');

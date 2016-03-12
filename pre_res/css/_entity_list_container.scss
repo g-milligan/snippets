@@ -1,0 +1,54 @@
+$elc_headtabs_height:30px;
+$elc_headctls_height:40px;
+$elc_headctls_searchbutton_width:50px;
+$elc_headctls_searchcancel_width:50px;
+
+$elc_default_font:Arial,'Helvetica Neue',Helvetica,sans-serif;
+
+/*basic layout styles*/
+.entity_lists_wrapper{
+  font-family:$elc_default_font;position:relative;box-sizing:border-box;-moz-box-sizing:border-box;
+
+  *{box-sizing:inherit;-moz-box-sizing:inherit;font-family:inherit;line-height:inherit;}
+
+  .entities_head{
+    position:absolute;top:0;left:0;width:100%;height:($elc_headtabs_height + $elc_headctls_height);
+
+    .groups{font-size:0;position:absolute;left:0;top:0;width:100%;height:$elc_headtabs_height;}
+    > *,> .groups{font-size:($elc_headtabs_height * .6);}
+    .groups .group{display:inline-block;line-height:$elc_headtabs_height;padding:0 ($elc_headtabs_height / 2);cursor:pointer;}
+    .groups .group.active{}
+    .controls{padding:0 ($elc_headtabs_height / 2);position:absolute;left:0;bottom:0;width:100%;height:$elc_headctls_height;}
+    .controls .control{display:none;position:relative;height:100%;line-height:$elc_headctls_height;}
+    .controls .control.active{display:block;}
+    .controls .search{
+      position:absolute;left:0;top:0;width:50%;height:100%;
+
+      .go,input,.cancel{position:absolute;height:($elc_headctls_height * .7);line-height:($elc_headctls_height * .7);}
+      .go{cursor:pointer;left:0;top:0;bottom:0;margin:auto;width:$elc_headctls_searchbutton_width;}
+      input{border:none;outline:none;border-left:solid $elc_headctls_searchbutton_width transparent;border-right:solid $elc_headctls_searchcancel_width transparent;left:0;top:0;bottom:0;right:0;margin:auto;width:100%;padding:0 10px;}
+      .cancel{cursor:pointer;right:0;top:0;bottom:0;margin:auto;width:$elc_headctls_searchcancel_width;}
+    }
+    .controls .actions{
+      position:absolute;right:0;top:0;width:50%;height:100%;text-align:right;height:($elc_headctls_height * .7);
+
+      > *{}
+      .add{}
+    }
+  }
+
+  .entities_body{
+    padding:($elc_headtabs_height / 2);position:absolute;top:($elc_headtabs_height + $elc_headctls_height);bottom:0;left:0;right:0;margin:auto;
+
+    .groups{}
+    .groups .group{
+      display:none;
+
+      .items{}
+      .items .item{
+        .txt{}
+      }
+    }
+    .groups .group.active{display:block;}
+  }
+}
