@@ -1,6 +1,6 @@
 var minifyCode=false;
 
-var jsFileOrder=['entity_list_container.js','ajax.js'];
+var jsFileOrder=['ajax.js','entity_list_container.js'];
 
 var preJsPath='pre_res/js/';
 var preCssPath='pre_res/css/';
