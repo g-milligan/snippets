@@ -1,6 +1,27 @@
 var entityListContainer = (function () {
   return {
+    getSvg:function(key,viewbox){
+      var str='';
+      if(this['svg'].hasOwnProperty(key)){
+        if(this['svg'][key].hasOwnProperty('path')){
+          if(viewbox==undefined){
+            viewbox='';
+            if(this['svg'][key].hasOwnProperty('viewbox')){
+              viewbox=' viewBox="'+this['svg'][key]['viewbox']+'"';
+            }
+          }else{ viewbox=' viewBox="'+viewbox+'"'; }
+          str='<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"'+viewbox+'><path d="'+this['svg'][key]['path']+'"></path></svg>';
+        }
+      } return str;
+    },
+    svg:{
+      search:{
+        viewbox:'0 0 512 512',
+        path:'M88.996 423.003c12.966 12.966 33.983 12.966 46.948 0l58.584-58.584c24.085 15.452 52.555 24.657 83.296 24.657 85.543 0 154.901-69.346 154.901-154.901s-69.358-154.9-154.901-154.9c-85.554 0-154.901 69.347-154.901 154.9 0 30.729 9.217 59.211 24.658 83.308l-58.584 58.584c-12.966 12.966-12.966 33.971 0 46.936zM277.826 123.529c61.103 0 110.644 49.529 110.644 110.643s-49.541 110.644-110.644 110.644c-61.113 0-110.644-49.531-110.644-110.644s49.531-110.643 110.644-110.643z'
+      }
+    },
     init:function(initArgs){
+      var elc=entityListContainer;
       var ret={status:'ok'};
       var wrap=jQuery('body:first');
       if(initArgs.hasOwnProperty('wrap')){
@@ -120,7 +141,7 @@ var entityListContainer = (function () {
                   var headControls=entities_head.find('.controls:first');
                   headControls.append('<div class="control" name="'+args['key']+'"></div>');
                   var headControl=headControls.children('.control:last');
-                  headControl.append('<div class="search"><input type="text" placeholder="Search for '+args['name']+'" /><span class="cancel"></span><span class="go"></span></div>');
+                  headControl.append('<div class="search"><input type="text" placeholder="Search for '+args['name']+'" /><span class="cancel"></span><span class="go">'+elc['getSvg']('search')+'</span></div>');
                   headControl.append('<div class="actions"><span class="add">Add '+args['name']+'</span></div>');
                   //search
                   var searchGoBtn=headControl.find('.search .go:first');
