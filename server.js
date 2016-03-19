@@ -54,6 +54,12 @@ app.post('/request-initial-data', function(req, res){
               {el:'v',lbl:'Raw Text',ctl:'textarea'}
             ]
           },
+          {key:'txttypes',name:'Text-type',
+            fields:[
+              {lbl:'Add/Edit Text-type'},
+              {el:'v',lbl:'File extension, eg: "js", "css"',ctl:'input',attr:{type:'text'}}
+            ]
+          },
           {key:'regex',name:'Regex',
             fields:[
               {lbl:'Add/Edit Regex'},
@@ -63,14 +69,18 @@ app.post('/request-initial-data', function(req, res){
           {key:'categories',name:'Category',
             fields:[
               {lbl:'Add/Edit Category'},
-              {el:'v',lbl:'Category Name',ctl:'input',attr:{type:'text'}}
+              {el:'v',lbl:'Category Name, eg: "My Category", "keyword"',ctl:'input',attr:{type:'text'}}
             ]
           },
           {key:'fieldsets',name:'Fieldset',
-
+            fields:[
+              {lbl:'Add/Edit Fieldset'}
+            ]
           },
           {key:'builders',name:'Builder',
-
+            fields:[
+              {lbl:'Add/Edit Builder'}
+            ]
           }
         ];
         resJson['groups']=[], rootDataDir='./data/';
