@@ -48,10 +48,30 @@ app.post('/request-initial-data', function(req, res){
       if(req.body['type']==='init'){
         //Which data folders should be considered groups? And in which order?
         var groups=[
-          {key:'txt',name:'Text'},
-          {key:'regex',name:'Regex'},
-          {key:'categories',name:'Category'},
-          {key:'builders',name:'Builder'}
+          {key:'txt',name:'Text',
+            fields:[
+              {lbl:'Add/Edit Text'},
+              {el:'v',lbl:'Raw Text',ctl:'textarea'}
+            ]
+          },
+          {key:'regex',name:'Regex',
+            fields:[
+              {lbl:'Add/Edit Regex'},
+              {el:'v',lbl:'Regex String',ctl:'input',attr:{type:'text'}}
+            ]
+          },
+          {key:'categories',name:'Category',
+            fields:[
+              {lbl:'Add/Edit Category'},
+              {el:'v',lbl:'Category Name',ctl:'input',attr:{type:'text'}}
+            ]
+          },
+          {key:'fieldsets',name:'Fieldset',
+
+          },
+          {key:'builders',name:'Builder',
+
+          }
         ];
         resJson['groups']=[], rootDataDir='./data/';
         //load start data for the groups
@@ -63,6 +83,7 @@ app.post('/request-initial-data', function(req, res){
               if(fs.lstatSync(dirp).isDirectory()){
                 if(!group.hasOwnProperty('name')){ group['name']=group['key']; }
                 var newGroup={key:group['key'],name:group['name']};
+                if(group.hasOwnProperty('fields')){ newGroup['fields']=group['fields']; }
                 //if first group (get some items to initially load)
                 if(resJson['groups'].length<1){
                   //load some items for this newGroup

@@ -118,6 +118,62 @@ var entityListContainer = (function () {
             for(var a=0;a<arr.length;a++){ ret['addGroupItem'](arr[a], key); }
           }
         };
+        //function to add a new group fields
+        ret['addGroupField']=function(args, key){
+          if(args!=undefined){
+            if(!args.hasOwnProperty('key')){
+              if(key!=undefined){ args['key']=key; }
+            }
+            if(args.hasOwnProperty('key')){
+              var bodyGroups=this['wrap'].find('.entities_body .groups:first');
+              var bodyGroup=bodyGroups.children('.group[name="'+args['key']+'"]:first');
+              if(bodyGroup.length>0){
+                var menuEditFields=bodyGroup.children('.menu-edit-fields:first');
+                var scrollFields=menuEditFields.children('.scroll-fields:first');
+                if(args.hasOwnProperty('el') && args.hasOwnProperty('lbl')){
+                  var fieldsWrap=scrollFields.children('div:last');
+                  if(fieldsWrap.length<1 || !fieldsWrap.hasClass('.fields')){
+                    scrollFields.append('<div class="fields"></div>');
+                    fieldsWrap=scrollFields.children('.fields:last');
+                  }
+                  fieldsWrap.append('<div class="field" name="'+args['el']+'"></div>');
+                  var fieldWrap=fieldsWrap.children('.field:last');
+                  var ctlId=bodyGroup.attr('name')+'_field_'+menuEditFields.find('.field').length;
+                  fieldWrap.append('<label for="'+ctlId+'">'+args['lbl']+'</label>');
+                  fieldWrap.append('<div class="ctl"></div>');
+                  var ctl=fieldWrap.children('.ctl:last');
+                  var ctlEl='input'; if(args.hasOwnProperty('ctl')){ ctlEl=args['ctl']; } var selfClose=false;
+                  switch(ctlEl){
+                    case 'input': selfClose=true; break;
+                  }
+                  if(selfClose){ ctl.append('<'+ctlEl+' id="'+ctlId+'" />'); }
+                  else{ ctl.append('<'+ctlEl+' id="'+ctlId+'"></'+ctlEl+'>'); }
+                  var newCtl=ctl.children(ctlEl+':first');
+                  if(args.hasOwnProperty('attr')){
+                    for(var a in args['attr']){
+                      if(args['attr'].hasOwnProperty(a)){
+                        newCtl.attr(a,args['attr'][a]);
+                      }
+                    }
+                  }
+
+
+
+
+
+                }else if(args.hasOwnProperty('lbl')){
+                  scrollFields.append('<div class="fields-heading">'+args['lbl']+'</div>');
+                }
+              }
+            }
+          }
+        };
+        //function to add a new group fields
+        ret['addGroupFields']=function(arr, key){
+          if(arr!=undefined){
+            for(var a=0;a<arr.length;a++){ ret['addGroupField'](arr[a], key); }
+          }
+        };
         //function to add a new content group
         ret['addGroup']=function(args){
           if(args!=undefined){
@@ -140,11 +196,22 @@ var entityListContainer = (function () {
                   //tabs
                   entities_head.find('.groups:first').append('<div class="group" name="'+args['key']+'">'+args['name']+'</div>');
                   headGroup=entities_head.find('.groups .group[name="'+args['key']+'"]:first');
-                  entities_body.find('.groups:first').append('<div class="group" name="'+args['key']+'"></div>');
-                  var bodyGroup=entities_body.find('.groups .group[name="'+args['key']+'"]:first');
                   headGroup.click(function(){
                     ret['setActiveGroup'](jQuery(this).attr('name'));
                   });
+                  //body content
+                  entities_body.find('.groups:first').append('<div class="group" name="'+args['key']+'"><div class="menu-edit-fields"><div class="scroll-fields"></div><div class="btns"><span class="save"><span class="ico"></span><span class="lbl">Save</span></span><span class="cancel"><span class="ico"></span><span class="lbl">Cancel</span></span></div></div></div>');
+                  var bodyGroup=entities_body.find('.groups .group[name="'+args['key']+'"]:first');
+                  var menuEditFields=bodyGroup.children('.menu-edit-fields:first');
+                  var menuBtns=menuEditFields.children('.btns:last');
+                  var saveBtn=menuBtns.children('.save:first');
+                  var cancelBtn=menuBtns.children('.cancel:last');
+
+
+
+                  if(args.hasOwnProperty('fields')){
+                    ret['addGroupFields'](args['fields'], args['key']);
+                  }
                   //controls like search
                   var headControls=entities_head.find('.controls:first');
                   headControls.append('<div class="control" name="'+args['key']+'"></div>');
