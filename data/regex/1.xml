@@ -1,6 +1,1 @@
-<?xml version="1.0"?>
-<regex>
-  <i i="0">
-    <v><![CDATA[ ]]></v>
-  </i>
-</regex>
+<?xml version="1.0"?><regex><i1><v><![CDATA[new test regex]]></v></i1></regex>

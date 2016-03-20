@@ -1,6 +1,15 @@
-<?xml version="1.0"?>
-<txt>
-  <i i="0">
-    <v><![CDATA[ ]]></v>
-  </i>
-</txt>
+<?xml version="1.0"?><txt><i1>
+    <v><![CDATA[
+      test test test
+      ]]></v>
+  </i1>
+  <i2>
+    <v><![CDATA[hello world
+
+      with spaces]]></v>
+  </i2>
+<i3><v><![CDATA[slow motion
+
+under water spirits]]></v></i3><i4><v><![CDATA[add some raw text
+
+<yeeeehaaa>]]></v></i4><i5><v><![CDATA[this is a test]]></v></i5></txt>

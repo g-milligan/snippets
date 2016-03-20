@@ -10,6 +10,10 @@ var openBrowser = require('open'); //npm install --save-dev open
 var app = express();
 var fs = require('fs');
 var bodyParser = require('body-parser'); //npm install --save-dev body-parser
+var xpath = require('xpath'); //npm install --save-dev xpath
+var xmldom = require('xmldom'); //npm install --save-dev xmldom
+var dom = xmldom.DOMParser;
+var XMLSerializer = xmldom.XMLSerializer;
 
 //function that makes sure ajax requests came from this same page
 var isSameHost=function(testUrl){
@@ -128,7 +132,7 @@ app.post('/set-data-item', function(req, res){
     if(req.body!=undefined){
       if(req.body.length>0){
         //for each item
-        for(var d=0;d<req.body.length:d++){
+        for(var d=0;d<req.body.length;d++){
           if(req.body[d].hasOwnProperty('key')){
             var dir=req.body[d]['key'];
             if(req.body[d].hasOwnProperty('fields')){
@@ -137,10 +141,73 @@ app.post('/set-data-item', function(req, res){
                 if(fs.existsSync(dirp)){
                   if(fs.lstatSync(dirp).isDirectory()){
                     var itemId; if(req.body[d].hasOwnProperty('item_id')){ itemId=req.body[d]['item_id']; }
-                    
+                    //if writing a new item (not writing to an existing item)
+                    if(itemId==undefined){
+                      //read the children of the directory
+                      var capByteSize=10485760; //cap the xml files at around 10MB before creating a new one
+                      var files = fs.readdirSync(dirp); var validFiles=[], smallestBytesSize=-1, smallestFile;
+                      for(var f=0;f<files.length;f++){
+                        //if ends in .xml
+                        if(files[f].lastIndexOf('.xml')===files[f].length-'.xml'.length){
+                          //if is file, not directory
+                          if(!fs.lstatSync(dirp+'/'+files[f]).isDirectory()){
+                            validFiles.push(files[f]);
+                            var stats = fs.statSync(dirp+'/'+files[f]);
+                            if(smallestBytesSize===-1 || smallestBytesSize>stats["size"]){
+                              smallestBytesSize=stats["size"];
+                              smallestFile=dirp+'/'+files[f];
+                            }
+                          }
+                        }
+                      }
+                      var writePath;
+                      //if there are any valid xml files saved yet to write to next
+                      if(validFiles.length>0 && smallestBytesSize<capByteSize){
+                        writePath=smallestFile;
+                      }else{
+                        //no small-enough xml files to write to, so create a new xml file
+                        var fileNum=1;
+                        while(validFiles.indexOf(fileNum+'.xml')!==-1){
+                          fileNum++; //fileNum not unique, try again
+                        }
+                        writePath=dirp+'/'+fileNum+'.xml';
+                        fs.writeFileSync(writePath, '<?xml version="1.0"?><'+dir+'></'+dir+'>');
+                      }
+                      var xmlStr=fs.readFileSync(writePath, 'ascii');
+                      //figure out the increment id of the new item
+                      var xmlDoc=new dom().parseFromString(xmlStr); var itemNames={};
+                      for(var c=0;c<xmlDoc.documentElement.childNodes.length;c++){
+                        var child=xmlDoc.documentElement.childNodes[c];
+                        if(child.nodeType===1){ itemNames[child.tagName.toLowerCase()]=1; }
+                      }
+                      var iNum=1; while(itemNames.hasOwnProperty('i'+iNum)){ iNum++; }
+                      //create the new item element that can contain one or more sub-nodes corresponding to one or more field values
+                      var newItem=xmlDoc.createElement('i'+iNum);
+                      xmlDoc.documentElement.appendChild(newItem);
+                      for(var f=0;f<req.body[d]['fields'].length;f++){
+                        if(req.body[d]['fields'][f].hasOwnProperty('el')){
+                          if(req.body[d]['fields'][f].hasOwnProperty('save_value')){
+                            var el=req.body[d]['fields'][f]['el'];
+                            var save_value=req.body[d]['fields'][f]['save_value'];
+                            var elChild=xmlDoc.createElement(el);
+                            newItem.appendChild(elChild);
+                            var cdataVal=xmlDoc.createCDATASection(save_value);
+                            elChild.appendChild(cdataVal);
+                          }
+                        }
+                      }
+                      //write changes
+                      var serializer=new XMLSerializer();
+                      var updatedXmlStr=serializer.serializeToString(xmlDoc);
+                      fs.writeFileSync(writePath, updatedXmlStr);
+                      resJson['summary']='added: ' + writePath + ' - i' + iNum;
+                    }else{
+                      //writing to an existing item in an existing file
 
 
 
+
+                    }
                   }
                 }
               }

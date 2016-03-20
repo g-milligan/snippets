@@ -15,7 +15,29 @@
     var entityLists=entityListContainer.init({
       wrap:'.entities:first',
       onsave:function(fieldsData, groupEl){
-        jax.setDataItem(fieldsData, function(){});
+
+        //*** loading animation
+
+
+        jax.setDataItem(fieldsData, function(data){
+
+
+          //***stop loading animation
+
+          if(data['status']==='ok'){
+
+
+            //*** alert with the success
+
+
+          }else{
+
+
+            //*** alert with the error
+
+
+          }
+        });
       }
     });
     jax.getData({type:'init'},function(data){
