@@ -76,7 +76,7 @@ $elc_default_font:Arial,'Helvetica Neue',Helvetica,sans-serif;
       }
     }
     .groups .group.active{display:block;}
-    .menu-edit-fields{
+    .menu-edit-field{
       width:100%;height:100%;position:relative;
 
       .scroll-fields{overflow:auto;position:absolute;left:0;top:0;right:0;margin:auto;bottom:($elc_editctls_height + ($elc_headtabs_height / 2));border-bottom:solid 1px #DFDFDF;}

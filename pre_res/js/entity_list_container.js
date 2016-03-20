@@ -74,7 +74,15 @@ var entityListContainer = (function () {
 
           }
         };
-        ret['openAddGroupItemMenu']=function(key){
+        ret['openEditGroupItemMenu']=function(key){
+          if(key!=undefined){
+
+
+
+
+          }
+        };
+        ret['closeEditGroupItemMenu']=function(key){
           if(key!=undefined){
 
 
@@ -128,8 +136,8 @@ var entityListContainer = (function () {
               var bodyGroups=this['wrap'].find('.entities_body .groups:first');
               var bodyGroup=bodyGroups.children('.group[name="'+args['key']+'"]:first');
               if(bodyGroup.length>0){
-                var menuEditFields=bodyGroup.children('.menu-edit-fields:first');
-                var scrollFields=menuEditFields.children('.scroll-fields:first');
+                var menuEditField=bodyGroup.children('.menu-edit-field:first');
+                var scrollFields=menuEditField.children('.scroll-fields:first');
                 if(args.hasOwnProperty('el') && args.hasOwnProperty('lbl')){
                   var fieldsWrap=scrollFields.children('div:last');
                   if(fieldsWrap.length<1 || !fieldsWrap.hasClass('.fields')){
@@ -138,7 +146,7 @@ var entityListContainer = (function () {
                   }
                   fieldsWrap.append('<div class="field" name="'+args['el']+'"></div>');
                   var fieldWrap=fieldsWrap.children('.field:last');
-                  var ctlId=bodyGroup.attr('name')+'_field_'+menuEditFields.find('.field').length;
+                  var ctlId=bodyGroup.attr('name')+'_field_'+menuEditField.find('.field').length;
                   fieldWrap.append('<label for="'+ctlId+'">'+args['lbl']+'</label>');
                   fieldWrap.append('<div class="ctl"></div>');
                   var ctl=fieldWrap.children('.ctl:last');
@@ -159,14 +167,54 @@ var entityListContainer = (function () {
 
 
 
-
-
+                  fieldWrap[0]['field_data']=args;
                 }else if(args.hasOwnProperty('lbl')){
                   scrollFields.append('<div class="fields-heading">'+args['lbl']+'</div>');
+                  var newHeading=scrollFields.children('.fields-heading:last');
+                  newHeading[0]['field_data']=args;
                 }
               }
             }
           }
+        };
+        ret['getEditFieldsData']=function(key,args){
+          var fieldsData;
+          if(key!=undefined){
+            var bodyGroups=this['wrap'].find('.entities_body .groups:first');
+            var bodyGroup=bodyGroups.children('.group[name="'+key+'"]:first');
+            if(bodyGroup.length>0){
+              bodyGroup.find('.fields .field').each(function(){
+                if(fieldsData==undefined){ fieldsData=[]; }
+                var ctl=jQuery(this).find('.ctl [id]:first');
+                var newField={};
+                var includeProp=function(prop){
+                  var setProp=false;
+                  if(args==undefined){
+                    setProp=true;
+                  }else if(args.hasOwnProperty('include')){
+                    if(args['include'].indexOf(prop)!==-1){
+                      setProp=true;
+                    }
+                  }else if(args.hasOwnProperty('exclude')){
+                    if(args['exclude'].indexOf(prop)===-1){
+                      setProp=true;
+                    }
+                  } return setProp;
+                };
+                if(includeProp('save_value')){
+                  newField['save_value']=ctl.val();
+                }
+                for(var f in jQuery(this)[0]['field_data']){
+                  if(jQuery(this)[0]['field_data'].hasOwnProperty(f)){
+                    if(includeProp(f)){
+                      newField[f]=jQuery(this)[0]['field_data'][f];
+                    }
+                  }
+                }
+                fieldsData.push(newField);
+              });
+            }
+          } return fieldsData;
         };
         //function to add a new group fields
         ret['addGroupFields']=function(arr, key){
@@ -200,15 +248,20 @@ var entityListContainer = (function () {
                     ret['setActiveGroup'](jQuery(this).attr('name'));
                   });
                   //body content
-                  entities_body.find('.groups:first').append('<div class="group" name="'+args['key']+'"><div class="menu-edit-fields"><div class="scroll-fields"></div><div class="btns"><span class="save"><span class="ico"></span><span class="lbl">Save</span></span><span class="cancel"><span class="ico"></span><span class="lbl">Cancel</span></span></div></div></div>');
+                  entities_body.find('.groups:first').append('<div class="group" name="'+args['key']+'"><div class="menu-edit-field"><div class="scroll-fields"></div><div class="btns"><span class="save"><span class="ico"></span><span class="lbl">Save</span></span><span class="cancel"><span class="ico"></span><span class="lbl">Cancel</span></span></div></div></div>');
                   var bodyGroup=entities_body.find('.groups .group[name="'+args['key']+'"]:first');
-                  var menuEditFields=bodyGroup.children('.menu-edit-fields:first');
-                  var menuBtns=menuEditFields.children('.btns:last');
+                  var menuEditField=bodyGroup.children('.menu-edit-field:first');
+                  var menuBtns=menuEditField.children('.btns:last');
                   var saveBtn=menuBtns.children('.save:first');
                   var cancelBtn=menuBtns.children('.cancel:last');
-
-
-
+                  saveBtn.click(function(){
+                    if(initArgs.hasOwnProperty('onsave')){
+                      var fieldsData=ret['getEditFieldsData'](args['key'], {include:['el','save_value']});
+                      initArgs['onsave']([{key:args['key'],fields:fieldsData}], jQuery(this).parents('.group[name]:first'));
+                    }
+                    ret['closeEditGroupItemMenu'](jQuery(this).parents('.group[name]:first').attr('name'));
+                  });
+                  cancelBtn.click(function(){ ret['closeEditGroupItemMenu'](jQuery(this).parents('.group[name]:first').attr('name')); });
                   if(args.hasOwnProperty('fields')){
                     ret['addGroupFields'](args['fields'], args['key']);
                   }
@@ -244,7 +297,7 @@ var entityListContainer = (function () {
                   var addBtn=headControl.find('.actions .add:first');
                   addBtn.click(function(e){
                     e.preventDefault(); var c=jQuery(this).parents('.control:first');
-                    ret['openAddGroupItemMenu'](c.attr('name'));
+                    ret['openEditGroupItemMenu'](c.attr('name'));
                   });
                   //set active group, if none are set as active already
                   if(isFirstGroup){ headGroup.click(); }

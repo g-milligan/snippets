@@ -38,6 +38,8 @@ app.use(bodyParser.urlencoded({ // to support URL-encoded bodies
   extended: true
 }));
 
+rootDataDir='./data/';
+
 //request data on app load
 app.post('/request-initial-data', function(req, res){
   var fromUrl=req.headers.referer;
@@ -83,7 +85,7 @@ app.post('/request-initial-data', function(req, res){
             ]
           }
         ];
-        resJson['groups']=[], rootDataDir='./data/';
+        resJson['groups']=[];
         //load start data for the groups
         for(var g=0;g<groups.length;g++){
           var group=groups[g];
@@ -113,6 +115,40 @@ app.post('/request-initial-data', function(req, res){
         } //end load start data for the groups
       }else{ resJson['status']='error, wrong type in sender'; }
     }else{ resJson['status']='error, no type in sender'; }
+    res.send(JSON.stringify(resJson));
+  }
+});
+
+//save data item to file
+app.post('/set-data-item', function(req, res){
+  var fromUrl=req.headers.referer;
+  //if the request came from this local site
+  if(isSameHost(fromUrl)){
+    var resJson={status:'ok'};
+    if(req.body!=undefined){
+      if(req.body.length>0){
+        //for each item
+        for(var d=0;d<req.body.length:d++){
+          if(req.body[d].hasOwnProperty('key')){
+            var dir=req.body[d]['key'];
+            if(req.body[d].hasOwnProperty('fields')){
+              if(req.body[d]['fields'].length>0){
+                var dirp=rootDataDir+dir;
+                if(fs.existsSync(dirp)){
+                  if(fs.lstatSync(dirp).isDirectory()){
+                    var itemId; if(req.body[d].hasOwnProperty('item_id')){ itemId=req.body[d]['item_id']; }
+                    
+
+
+
+                  }
+                }
+              }
+            }
+          }
+        }
+      }else{ resJson['status']='error, save array is empty'; }
+    }else{ resJson['status']='error, no save array provided'; }
     res.send(JSON.stringify(resJson));
   }
 });

@@ -40,6 +40,20 @@ var jax = (function () {
           }
         }
       }
+    },
+    //save data on one of the data items, new or existing
+    setDataItem:function(args, callback){
+      if(args!=undefined){
+        //post request
+        this['ajaxPost']('/set-data-item',
+          {
+            send:args,
+            callback:function(data){
+              callback(data);
+            }
+          }
+        );
+      }
     }
   };
 }());
