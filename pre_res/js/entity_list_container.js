@@ -26,6 +26,10 @@ var entityListContainer = (function () {
       plus:{
         viewbox:'0 0 640 640',
         path:'M515.052 282.482h-157.572v-157.572c0-20.709-16.77-22.51-37.518-22.51-20.709 0-37.517 1.763-37.517 22.51v157.572h-157.536c-20.748 0-22.51 16.808-22.51 37.518s1.762 37.518 22.51 37.518h157.536v157.572c0 20.709 16.808 22.51 37.517 22.51 20.748 0 37.518-1.801 37.518-22.51v-157.572h157.572c20.748 0 22.548-16.808 22.548-37.518s-1.801-37.518-22.548-37.518z'
+      },
+      save:{
+        viewbox:'0 0 640 640',
+        path:'M464.816 96h-312.816c-30.8 0-56 25.2-56 56v336c0 30.8 25.2 56 56 56h336c30.8 0 56-25.2 56-56v-304.444l-79.184-87.556zM432 264c0 15.4-12.6 28-28 28h-168c-15.4 0-28-12.6-28-28v-140h224v140zM404 152h-56v112h56v-112z'
       }
     },
     init:function(initArgs){
@@ -248,7 +252,7 @@ var entityListContainer = (function () {
                     ret['setActiveGroup'](jQuery(this).attr('name'));
                   });
                   //body content
-                  entities_body.find('.groups:first').append('<div class="group" name="'+args['key']+'"><div class="menu-edit-field"><div class="scroll-fields"></div><div class="btns"><span class="save"><span class="ico"></span><span class="lbl">Save</span></span><span class="cancel"><span class="ico"></span><span class="lbl">Cancel</span></span></div></div></div>');
+                  entities_body.find('.groups:first').append('<div class="group" name="'+args['key']+'"><div class="menu-edit-field"><div class="scroll-fields"></div><div class="btns"><span class="save"><span class="ico">'+elc['getSvg']('save')+'</span><span class="lbl">Save</span></span><span class="cancel"><span class="ico"></span><span class="lbl">Cancel</span></span></div></div></div>');
                   var bodyGroup=entities_body.find('.groups .group[name="'+args['key']+'"]:first');
                   var menuEditField=bodyGroup.children('.menu-edit-field:first');
                   var menuBtns=menuEditField.children('.btns:last');

@@ -35,31 +35,14 @@ $elc_default_font:Arial,'Helvetica Neue',Helvetica,sans-serif;
       .cancel:hover svg path,
       .go:hover svg path{fill:#C3C3C3;}
     }
-    .controls svg{width:($elc_headctls_height * .6);height:($elc_headctls_height * .6);display:inline-block;vertical-align:middle;
+    .controls svg{width:($elc_headctls_height * .6);height:($elc_headctls_height * .6);
       path{fill:#6D6D6D;}
     }
     .controls .actions{
       position:absolute;right:0;top:0;width:50%;height:100%;text-align:right;
 
       > *{position:relative;height:100%;display:inline-block;padding:0 13px;}
-      > *{
-        .ico{
-          display:inline-block;position:relative;vertical-align:middle;margin-right:7px;
-
-          svg{
-            display:block;
-
-            path{}
-          }
-        }
-        .lbl{display:inline-block;}
-      }
-      .add{cursor:pointer;background-color:#8A8A8A;color:#fff;
-        svg path{fill:#fff;}
-      }
-      .add:hover{background-color:#B9B9B9;
-        svg path{}
-      }
+      .add{@extend .btn_default;}
     }
   }
 
@@ -83,11 +66,15 @@ $elc_default_font:Arial,'Helvetica Neue',Helvetica,sans-serif;
       .btns{
         position:absolute;bottom:0;left:0;right:0;margin:auto;height:$elc_editctls_height;
 
-        > *{display:inline-block;cursor:pointer;padding:0 13px;height:100%;line-height:$elc_editctls_height;font-size:($elc_editctls_height / 2);background-color:#8A8A8A;color:#fff;}
-        .save{}
-        .save:hover{background-color:#B9B9B9;}
+        .save,.cancel{
+          @extend .btn_default;padding:0 13px;height:100%;line-height:$elc_editctls_height;font-size:($elc_editctls_height / 2);
+
+          .ico{
+            svg{width:($elc_editctls_height * .6);height:($elc_editctls_height * .6);}
+          }
+        }
+        .save{float:left;}
         .cancel{float:right;}
-        .cancel:hover{background-color:#B9B9B9;}
       }
       .fields-heading{background-color:#8A8A8A;font-size:($elc_editctls_height / 2);line-height:$elc_editctls_height;padding:0 ($elc_headtabs_height / 2);color:#fff;font-weight:100;font-style:italic;}
       .fields{}
