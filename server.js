@@ -44,6 +44,63 @@ app.use(bodyParser.urlencoded({ // to support URL-encoded bodies
 
 rootDataDir='./data/';
 
+var forEachXmlDataFile=function(dirPath, eachCallback){
+  var files = fs.readdirSync(dirPath).sort();
+  for(var f=0;f<files.length;f++){
+    //if ends in .xml
+    if(files[f].lastIndexOf('.xml')===files[f].length-'.xml'.length){
+      //if is file, not directory
+      if(!fs.lstatSync(dirPath+'/'+files[f]).isDirectory()){
+        var ret=eachCallback(files[f],f,files.length);
+        if(ret!=undefined){
+          if(!ret){ break; }
+        }
+      }
+    }
+  } return files;
+}
+
+var readItemsFromFiles=function(dirPath,startFileNum,startItemNum,itemCount){
+  var ret;
+  if(startFileNum==undefined){ startFileNum=1; }
+  if(startItemNum==undefined){ startItemNum=-1; }
+  if(itemCount==undefined){ itemCount=-1; }
+  if(startFileNum>0 && startItemNum>0){
+    var currentItemNum=1, currentCount=0, prevFile='';
+    var files=forEachXmlDataFile(dirPath,function(file,fileIndex,fileCount){
+      if(startFileNum<=fileIndex+1){
+        //get xml doc
+        var xmlStr=fs.readFileSync(dirPath+'/'+file, 'ascii');
+        var xmlDoc=new dom().parseFromString(xmlStr);
+        for(var i=0;i<xmlDoc.documentElement.childNodes.length;i++){
+          if(xmlDoc.documentElement.childNodes[i].nodeType===1){
+            if(startItemNum<=currentItemNum){
+              if(itemCount<1 || currentCount<itemCount){
+                if(ret==undefined){ ret=[]; }
+                if(prevFile!==file){ ret.push(file); prevFile=file; }
+                var itemNode=xmlDoc.documentElement.childNodes[i];
+                var itemId=xmlDoc.documentElement.childNodes[i].tagName.toLowerCase();
+                var itemData={id:itemId.substring(1)};
+                for(var d=0;d<itemNode.childNodes.length;d++){
+                  if(itemNode.childNodes[d].nodeType===1){
+                    var dataName=itemNode.childNodes[d].tagName.toLowerCase();
+                    itemData[dataName]=itemNode.childNodes[d].nodeValue || itemNode.childNodes[d].textContent;
+                  }
+                }
+                ret.push(itemData)
+                currentCount++;
+              }else{
+                return false;
+              }
+            }
+            currentItemNum++;
+          }
+        }
+      }
+    });
+  } return ret;
+};
+
 //request data on app load
 app.post('/request-initial-data', function(req, res){
   var fromUrl=req.headers.referer;
@@ -102,8 +159,8 @@ app.post('/request-initial-data', function(req, res){
                 if(group.hasOwnProperty('fields')){ newGroup['fields']=group['fields']; }
                 //if first group (get some items to initially load)
                 if(resJson['groups'].length<1){
-                  //load some items for this newGroup
-                  //***
+                  //load some items for this newGroup (start at file=1, item=1) get 15 items at most
+                  newGroup['items']=readItemsFromFiles(dirp,1,1,15);
                 }
                 //add this new group to the array
                 resJson['groups'].push(newGroup);
@@ -144,22 +201,16 @@ app.post('/set-data-item', function(req, res){
                     //if writing a new item (not writing to an existing item)
                     if(itemId==undefined){
                       //read the children of the directory
-                      var capByteSize=10485760; //cap the xml files at around 10MB before creating a new one
-                      var files = fs.readdirSync(dirp); var validFiles=[], smallestBytesSize=-1, smallestFile;
-                      for(var f=0;f<files.length;f++){
-                        //if ends in .xml
-                        if(files[f].lastIndexOf('.xml')===files[f].length-'.xml'.length){
-                          //if is file, not directory
-                          if(!fs.lstatSync(dirp+'/'+files[f]).isDirectory()){
-                            validFiles.push(files[f]);
-                            var stats = fs.statSync(dirp+'/'+files[f]);
-                            if(smallestBytesSize===-1 || smallestBytesSize>stats["size"]){
-                              smallestBytesSize=stats["size"];
-                              smallestFile=dirp+'/'+files[f];
-                            }
-                          }
+                      var capByteSize=5242880; //cap the xml files at around 5MB before creating a new one
+                       var validFiles=[], smallestBytesSize=-1, smallestFile;
+                      var files=forEachXmlDataFile(dirp,function(file,fileIndex,fileCount){
+                        validFiles.push(file);
+                        var stats = fs.statSync(dirp+'/'+file);
+                        if(smallestBytesSize===-1 || smallestBytesSize>stats["size"]){
+                          smallestBytesSize=stats["size"];
+                          smallestFile=dirp+'/'+file;
                         }
-                      }
+                      });
                       var writePath;
                       //if there are any valid xml files saved yet to write to next
                       if(validFiles.length>0 && smallestBytesSize<capByteSize){

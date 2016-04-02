@@ -95,31 +95,43 @@ var entityListContainer = (function () {
           }
         };
         //function to add group item
-        ret['addGroupItem']=function(args, key){
+        ret['addGroupItem']=function(args, key, file){
           if(args!=undefined){
-            if(!args.hasOwnProperty('key')){
-              if(key!=undefined){ args['key']=key; }
-            }
-            if(args.hasOwnProperty('key')){
-              var bodyGroups=this['wrap'].find('.entities_body .groups:first');
-              var bodyGroup=bodyGroups.children('.group[name="'+args['key']+'"]:first');
-              if(bodyGroup.length>0){
-                var groupItems=bodyGroup.children('.items:first');
-                if(groupItems.length<1){
-                  bodyGroup.append('<div class="items"></div>');
-                  groupItems=bodyGroup.children('.items:first');
-                }
-                if(args.hasOwnProperty('txt')){
-                  groupItems.append('<div class="item"></div>');
-                  var groupItem=groupItems.children('.item:last');
-                  groupItem.append('<div class="txt"><pre></pre></div>');
-                  var groupItemPre=groupItem.find('.txt pre:first');
-                  groupItemPre.html(args['txt']);
+            //if this is not a data xml file name
+            if(typeof args!=='string'){
+              //this is item data, not an xml file name
+              if(!args.hasOwnProperty('key')){
+                if(key!=undefined){ args['key']=key; }
+              }
+              if(args.hasOwnProperty('key')){
+                var bodyGroups=this['wrap'].find('.entities_body .groups:first');
+                var bodyGroup=bodyGroups.children('.group[name="'+args['key']+'"]:first');
+                if(bodyGroup.length>0){
+                  var groupItems=bodyGroup.children('.items:first');
+                  if(groupItems.length<1){
+                    bodyGroup.append('<div class="items"></div>');
+                    groupItems=bodyGroup.children('.items:first');
+                  }
+                  if(args.hasOwnProperty('v')){
+                    groupItems.append('<div class="item" data-file="'+file.substring(0,file.lastIndexOf('.xml'))+'" data-id="'+args['id']+'"></div>');
+                    var groupItem=groupItems.children('.item:last');
 
+                    //set what data elements get printed
+                    var itemDataEls=[
+                      {key:'v',pre:true}
+                    ];
 
-
-
-
+                    for(var e=0;e<itemDataEls.length;e++){
+                      var dataEl=itemDataEls[e];
+                      if(args.hasOwnProperty(dataEl['key'])){
+                        groupItem.append('<div class="'+dataEl['key']+'"></div>'); var valEl=groupItem.children('div:last');
+                        if(dataEl.hasOwnProperty('pre')){
+                          if(dataEl['pre']){ valEl.append('<pre></pre>'); valEl=valEl.children('pre:first'); }
+                        }
+                        valEl.html(args[dataEl['key']]);
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -127,7 +139,13 @@ var entityListContainer = (function () {
         };
         ret['addGroupItems']=function(arr, key){
           if(arr!=undefined){
-            for(var a=0;a<arr.length;a++){ ret['addGroupItem'](arr[a], key); }
+            var currentFile='';
+            for(var a=0;a<arr.length;a++){
+              if(typeof arr[a]==='string'){ currentFile=arr[a]; }
+              else{
+                ret['addGroupItem'](arr[a], key, currentFile);
+              }
+            }
           }
         };
         //function to add a new group fields
@@ -252,7 +270,7 @@ var entityListContainer = (function () {
                     ret['setActiveGroup'](jQuery(this).attr('name'));
                   });
                   //body content
-                  entities_body.find('.groups:first').append('<div class="group" name="'+args['key']+'"><div class="menu-edit-field"><div class="scroll-fields"></div><div class="btns"><span class="save"><span class="ico">'+elc['getSvg']('save')+'</span><span class="lbl">Save</span></span><span class="cancel"><span class="ico"></span><span class="lbl">Cancel</span></span></div></div></div>');
+                  entities_body.find('.groups:first').append('<div class="group" name="'+args['key']+'"><div class="items"></div><div class="menu-edit-field"><div class="scroll-fields"></div><div class="btns"><span class="save"><span class="ico">'+elc['getSvg']('save')+'</span><span class="lbl">Save</span></span><span class="cancel"><span class="ico">'+elc['getSvg']('x')+'</span><span class="lbl">Cancel</span></span></div></div></div>');
                   var bodyGroup=entities_body.find('.groups .group[name="'+args['key']+'"]:first');
                   var menuEditField=bodyGroup.children('.menu-edit-field:first');
                   var menuBtns=menuEditField.children('.btns:last');
