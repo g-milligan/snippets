@@ -14,7 +14,17 @@
     //load initial data
     var entityLists=entityListContainer.init({
       wrap:'.entities:first',
-      onsave:function(fieldsData, groupEl){
+      onlazyload:function(loadData, groupEl, entity){
+        loadData['type']='lazyload';
+        jax.getData(loadData,function(data){
+          if(data['status']==='ok'){
+            entity.addGroupItems(data['items']);
+          }else{
+            //***oops something went wrong
+          }
+        });
+      },
+      onsave:function(fieldsData, groupEl, entity){
 
         //*** loading animation
 

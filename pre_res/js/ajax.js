@@ -37,6 +37,17 @@ var jax = (function () {
                 }
               );
               break;
+              case 'lazyload':
+                //post request
+                this['ajaxPost']('/request-lazyload',
+                  {
+                    send:args,
+                    callback:function(data){
+                      callback(data);
+                    }
+                  }
+                );
+                break;
           }
         }
       }

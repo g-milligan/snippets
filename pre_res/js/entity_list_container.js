@@ -95,40 +95,57 @@ var entityListContainer = (function () {
           }
         };
         //function to add group item
-        ret['addGroupItem']=function(args, key, file){
-          if(args!=undefined){
+        ret['addGroupItem']=function(item, args){
+          if(item!=undefined){
             //if this is not a data xml file name
-            if(typeof args!=='string'){
-              //this is item data, not an xml file name
-              if(!args.hasOwnProperty('key')){
-                if(key!=undefined){ args['key']=key; }
-              }
-              if(args.hasOwnProperty('key')){
-                var bodyGroups=this['wrap'].find('.entities_body .groups:first');
-                var bodyGroup=bodyGroups.children('.group[name="'+args['key']+'"]:first');
-                if(bodyGroup.length>0){
-                  var groupItems=bodyGroup.children('.items:first');
-                  if(groupItems.length<1){
-                    bodyGroup.append('<div class="items"></div>');
-                    groupItems=bodyGroup.children('.items:first');
+            if(typeof item!=='string'){
+              var bodyGroups=this['wrap'].find('.entities_body .groups:first');
+              var bodyGroup=bodyGroups.children('.group[name="'+args['key']+'"]:first');
+              if(bodyGroup.length>0){
+                var groupItems=bodyGroup.children('.items:first');
+                if(groupItems.length<1){
+                  bodyGroup.append('<div class="items"></div>');
+                  groupItems=bodyGroup.children('.items:first');
+                }
+                //if this is a lazy load indicator... to be continued
+                if(item.hasOwnProperty('break')){
+                  var files_remain=item['files_remain'];
+                  var moreInThisFile=item['more_in_this_file'];
+                  if(files_remain>0 || moreInThisFile>0){
+                    groupItems.append('<div data-files="'+files_remain+'" data-items="'+moreInThisFile+'" class="lazy-load-more"><div class="btn">More</div></div>');
+                    var moreBtn=groupItems.children('.lazy-load-more:first').children('.btn:first');
+                    moreBtn.click(function(){
+                      if(initArgs.hasOwnProperty('onlazyload')){
+                        var par=jQuery(this).parent();
+                        var groupEl=par.parents('.group:first');
+                        var send={
+                          key:groupEl.attr('name'),
+                          files_remain:par.attr('data-files'),
+                          more_in_this_file:par.attr('data-items')
+                        };
+                        initArgs['onlazyload'](send,groupEl,ret);
+                      }
+                    });
                   }
-                  if(args.hasOwnProperty('v')){
-                    groupItems.append('<div class="item" data-file="'+file.substring(0,file.lastIndexOf('.xml'))+'" data-id="'+args['id']+'"></div>');
+                }else{
+                  var dataFile=item['file'].substring(0,item['file'].lastIndexOf('.xml'));
+                  var dataId=item['id'];
+                  var existingItem=groupItems.children('.item[data-file="'+dataFile+'"][data-id="'+dataId+'"]:first');
+                  if(existingItem.length<1){
+                    groupItems.children('.lazy-load-more').remove();
+                    //print the group item
+                    groupItems.append('<div class="item" data-file="'+dataFile+'" data-id="'+dataId+'"></div>');
                     var groupItem=groupItems.children('.item:last');
-
-                    //set what data elements get printed
-                    var itemDataEls=[
-                      {key:'v',pre:true}
-                    ];
-
-                    for(var e=0;e<itemDataEls.length;e++){
-                      var dataEl=itemDataEls[e];
-                      if(args.hasOwnProperty(dataEl['key'])){
-                        groupItem.append('<div class="'+dataEl['key']+'"></div>'); var valEl=groupItem.children('div:last');
-                        if(dataEl.hasOwnProperty('pre')){
-                          if(dataEl['pre']){ valEl.append('<pre></pre>'); valEl=valEl.children('pre:first'); }
+                    if(args.hasOwnProperty('item_display')){
+                      for(var e=0;e<args['item_display'].length;e++){
+                        var itemDisplay=args['item_display'][e];
+                        if(item.hasOwnProperty(itemDisplay['el'])){
+                          groupItem.append('<div class="'+itemDisplay['el']+'"></div>'); var valEl=groupItem.children('div:last');
+                          if(itemDisplay.hasOwnProperty('pre')){
+                            if(itemDisplay['pre']){ valEl.append('<pre></pre>'); valEl=valEl.children('pre:first'); }
+                          }
+                          valEl.html(item[itemDisplay['el']]);
                         }
-                        valEl.html(args[dataEl['key']]);
                       }
                     }
                   }
@@ -137,13 +154,14 @@ var entityListContainer = (function () {
             }
           }
         };
-        ret['addGroupItems']=function(arr, key){
-          if(arr!=undefined){
+        ret['addGroupItems']=function(args){
+          if(args!=undefined){
             var currentFile='';
-            for(var a=0;a<arr.length;a++){
-              if(typeof arr[a]==='string'){ currentFile=arr[a]; }
+            for(var a=0;a<args['items'].length;a++){
+              if(typeof args['items'][a]==='string'){ currentFile=args['items'][a]; }
               else{
-                ret['addGroupItem'](arr[a], key, currentFile);
+                args['items'][a]['file']=currentFile;
+                ret['addGroupItem'](args['items'][a], args);
               }
             }
           }
@@ -279,7 +297,7 @@ var entityListContainer = (function () {
                   saveBtn.click(function(){
                     if(initArgs.hasOwnProperty('onsave')){
                       var fieldsData=ret['getEditFieldsData'](args['key'], {include:['el','save_value']});
-                      initArgs['onsave']([{key:args['key'],fields:fieldsData}], jQuery(this).parents('.group[name]:first'));
+                      initArgs['onsave']([{key:args['key'],fields:fieldsData}], jQuery(this).parents('.group[name]:first'), ret);
                     }
                     ret['closeEditGroupItemMenu'](jQuery(this).parents('.group[name]:first').attr('name'));
                   });
@@ -326,7 +344,7 @@ var entityListContainer = (function () {
                 }
                 //add items to this group
                 if(args.hasOwnProperty('items')){
-                  ret['addGroupItems'](args['items'], args['key']);
+                  ret['addGroupItems'](args);
                 }
               }
             }
