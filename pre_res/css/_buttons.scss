@@ -1,0 +1,20 @@
+.btn_default{
+  cursor:pointer;background-color:#8A8A8A;color:#fff;@include transition(background-color .2s linear);
+
+  svg{
+    width:25px;height:25px;max-width:100%;max-height:100%;display:inline-block;vertical-align:middle;
+
+    path{fill:#fff;}
+  }
+
+  > *{
+    display:inline-block;font-size:inherit;line-height:inherit;color:inherit;
+  }
+
+  .ico{
+    display:inline-block;position:relative;vertical-align:middle;margin-right:7px;
+  }
+  .lbl{vertical-align:middle;}
+
+  &:hover{background-color:#B9B9B9;}
+}
