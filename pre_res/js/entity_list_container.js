@@ -90,7 +90,7 @@ var entityListContainer = (function () {
           }
         };
         ret['deleteGroupItem']=function(whichItem){
-
+          
         };
         ret['copyGroupItemValue']=function(whichItem){
 
@@ -236,7 +236,7 @@ var entityListContainer = (function () {
                     groupItem.find('.v:first').click(function(){
                       doEdit(jQuery(this).parent().children('.btn-edit:last'));
                     });
-                    groupItem.children('.btn-delete:last').click(function(){
+                    groupItem.children('.btn-delete:last').click(function(e){
                       ret['deleteGroupItem'](jQuery(this).parents('.item:first'));
                     });
                     //move lazy load to the end
