@@ -56,6 +56,12 @@ var groups=[
   }
 ];
 
+var setGroupDefaults=function(group){
+  if(!group.hasOwnProperty('item_display')){
+    group['item_display']=[{el:'v',pre:true}];
+  } return group;
+};
+
 var groupKeyIndexes={};
 var getGroupByKey=function(key){
   var group;
@@ -70,6 +76,7 @@ var getGroupByKey=function(key){
   if(groupKeyIndexes.hasOwnProperty(key)){
     var index=groupKeyIndexes[key];
     group=groups[index];
+    group=setGroupDefaults(group);
   }
   return group;
 };
@@ -122,17 +129,44 @@ var forEachXmlDataFile=function(dirPath, eachCallback){
   } return files;
 }
 
-var readItemsFromFiles=function(dirPath,startFileNum,startItemNum,itemCount){
+var getDataItemJson=function(keyVals){
+  var ret;
+  if(keyVals.nodeType && keyVals.nodeType===1){
+    ret={};
+    var id=keyVals.tagName.toLowerCase();
+    id=id.substring(1);
+    //for each child node element in this item node
+    for(var d=0;d<keyVals.childNodes.length;d++){
+      if(keyVals.childNodes[d].nodeType===1){
+        var dataName=keyVals.childNodes[d].tagName.toLowerCase();
+        ret[dataName]=keyVals.childNodes[d].nodeValue || keyVals.childNodes[d].textContent;
+      }
+    }
+    ret['id']=id;
+  }else{
+    if(keyVals.hasOwnProperty('id')){
+      ret={};
+      for(var k in keyVals){
+        if(keyVals.hasOwnProperty(k)){
+          ret[k]=keyVals[k];
+        }
+      }
+    }
+  }
+  return ret;
+};
+
+var readItemsFromFiles=function(dirPath,startFileNum,startItemNum,maxItemsAdded){
   var ret;
   if(startFileNum==undefined){ startFileNum=1; }
   if(startItemNum==undefined){ startItemNum=-1; }
-  if(itemCount==undefined){ itemCount=-1; }
+  if(maxItemsAdded==undefined){ maxItemsAdded=-1; }
   if(startFileNum>0 && startItemNum>0){
-    var currentItemNum=1, currentCount=0, prevFile='', stoppedBeforeEnd=false;
+    var itemCountTotalAllFiles=1, itemCountAddedAllFiles=0, prevFile='', stoppedBeforeEnd=false;
     //for each file
     var files=forEachXmlDataFile(dirPath,function(file,fileIndex,fileCount){
       //if at the file number at which to start
-      var currentItemNumInFile=0, addItemsFromFile=0;
+      var itemCountTotalInFile=0, itemCountAddedInFile=0;
       if(startFileNum<=fileIndex+1){
         //get xml doc
         var xmlStr=fs.readFileSync(dirPath+'/'+file, 'ascii');
@@ -140,40 +174,32 @@ var readItemsFromFiles=function(dirPath,startFileNum,startItemNum,itemCount){
         //for each item in this file
         for(var i=0;i<xmlDoc.documentElement.childNodes.length;i++){
           if(xmlDoc.documentElement.childNodes[i].nodeType===1){
-            if(startItemNum<=currentItemNum){
-              //if not reached max itemCount
-              if(itemCount<1 || currentCount<itemCount){
+            if(startItemNum<=itemCountTotalAllFiles){
+              //if not reached maxItemsAdded
+              if(maxItemsAdded<1 || itemCountAddedAllFiles<maxItemsAdded){
                 if(ret==undefined){ ret=[]; }
                 if(prevFile!==file){ ret.push(file); prevFile=file; }
                 var itemNode=xmlDoc.documentElement.childNodes[i];
-                var itemId=xmlDoc.documentElement.childNodes[i].tagName.toLowerCase();
-                var itemData={id:itemId.substring(1)};
-                //for each node element in this item
-                for(var d=0;d<itemNode.childNodes.length;d++){
-                  if(itemNode.childNodes[d].nodeType===1){
-                    var dataName=itemNode.childNodes[d].tagName.toLowerCase();
-                    itemData[dataName]=itemNode.childNodes[d].nodeValue || itemNode.childNodes[d].textContent;
-                  }
-                }
+                var itemData=getDataItemJson(itemNode);
                 ret.push(itemData)
-                currentCount++; addItemsFromFile++;
+                itemCountAddedAllFiles++; itemCountAddedInFile++;
               }else{
                 stoppedBeforeEnd=true;
               }
             }
-            currentItemNum++; currentItemNumInFile++;
+            itemCountTotalAllFiles++; itemCountTotalInFile++;
           }
         }
       }
-      //if stopped at the itemCount limit, before the end of the items
+      //if stopped at the maxItemsAdded limit, before the end of the items
       if(stoppedBeforeEnd){
         var filesRemain=fileCount-(fileIndex+1);
-        var moreInFile=currentItemNumInFile-addItemsFromFile;
+        var moreInFile=itemCountTotalInFile - (startItemNum - 1 + itemCountAddedInFile);
         //indicate the number of remaining files and items in this file
         ret.push({break:true,
           files_remain:filesRemain,
           stopped_at_file:fileIndex+1,
-          stopped_at_item:addItemsFromFile,
+          stopped_at_item:itemCountTotalInFile-moreInFile,
           more_in_this_file:moreInFile
         });
         return ret;
@@ -196,11 +222,7 @@ var getGroupData=function(group,args){
       if(fs.lstatSync(dirp).isDirectory()){
         if(!group.hasOwnProperty('name')){ group['name']=group['key']; }
         var newGroup={key:group['key'],name:group['name']};
-        if(group.hasOwnProperty('item_display')){
-          newGroup['item_display']=group['item_display'];
-        }else{
-          newGroup['item_display']=[{el:'v',pre:true}];
-        }
+        newGroup=setGroupDefaults(newGroup);
         if(group.hasOwnProperty('fields')){ newGroup['fields']=group['fields']; }
         //if first group (get some items to initially load)
         if(args['items']['get_items']){
@@ -303,7 +325,7 @@ app.post('/set-data-item', function(req, res){
   var fromUrl=req.headers.referer;
   //if the request came from this local site
   if(isSameHost(fromUrl)){
-    var resJson={status:'ok'};
+    var resJson={status:'ok','groups':[]};
     if(req.body!=undefined){
       if(req.body.length>0){
         //for each item
@@ -315,18 +337,21 @@ app.post('/set-data-item', function(req, res){
                 var dirp=rootDataDir+dir;
                 if(fs.existsSync(dirp)){
                   if(fs.lstatSync(dirp).isDirectory()){
+                    var group=getGroupByKey(dir);
+                    group['items']=[]; var prevFile='';
                     var itemId; if(req.body[d].hasOwnProperty('item_id')){ itemId=req.body[d]['item_id']; }
                     //if writing a new item (not writing to an existing item)
                     if(itemId==undefined){
                       //read the children of the directory
                       var capByteSize=5242880; //cap the xml files at around 5MB before creating a new one
-                       var validFiles=[], smallestBytesSize=-1, smallestFile;
+                       var validFiles=[], smallestBytesSize=-1, smallestFile, writeFile;
                       var files=forEachXmlDataFile(dirp,function(file,fileIndex,fileCount){
                         validFiles.push(file);
                         var stats = fs.statSync(dirp+'/'+file);
                         if(smallestBytesSize===-1 || smallestBytesSize>stats["size"]){
                           smallestBytesSize=stats["size"];
                           smallestFile=dirp+'/'+file;
+                          writeFile=file;
                         }
                       });
                       var writePath;
@@ -339,8 +364,12 @@ app.post('/set-data-item', function(req, res){
                         while(validFiles.indexOf(fileNum+'.xml')!==-1){
                           fileNum++; //fileNum not unique, try again
                         }
-                        writePath=dirp+'/'+fileNum+'.xml';
+                        writeFile=fileNum+'.xml';
+                        writePath=dirp+'/'+writeFile;
                         fs.writeFileSync(writePath, '<?xml version="1.0"?><'+dir+'></'+dir+'>');
+                      }
+                      if(prevFile!==writeFile){
+                        group['items'].push(writeFile); prevFile=writeFile;
                       }
                       var xmlStr=fs.readFileSync(writePath, 'ascii');
                       //figure out the increment id of the new item
@@ -365,6 +394,8 @@ app.post('/set-data-item', function(req, res){
                           }
                         }
                       }
+                      group['items'].push(getDataItemJson(newItem));
+                      resJson['groups'].push(group);
                       //write changes
                       var serializer=new XMLSerializer();
                       var updatedXmlStr=serializer.serializeToString(xmlDoc);

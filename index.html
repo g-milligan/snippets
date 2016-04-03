@@ -36,6 +36,9 @@
 
           if(data['status']==='ok'){
 
+            for(var g=0;g<data['groups'].length;g++){
+              entity.addGroupItems(data['groups'][g]);
+            }
 
             //*** alert with the success
 
