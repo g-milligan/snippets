@@ -114,7 +114,7 @@ var entityListContainer = (function () {
                   var stoppedAtFile=item['stopped_at_file'];
                   var stoppedAtItem=item['stopped_at_item'];
                   if(files_remain>0 || moreInThisFile>0){
-                    groupItems.append('<div data-stopfile="'+stoppedAtFile+'" data-stopitem="'+stoppedAtItem+'" data-files="'+files_remain+'" data-items="'+moreInThisFile+'" class="lazy-load-more"><div class="btn">More</div></div>');
+                    groupItems.append('<div data-stopfile="'+stoppedAtFile+'" data-stopitem="'+stoppedAtItem+'" data-filesremain="'+files_remain+'" data-itemsremain="'+moreInThisFile+'" class="lazy-load-more"><div class="btn">More</div></div>');
                     var moreBtn=groupItems.children('.lazy-load-more:first').children('.btn:first');
                     moreBtn.click(function(){
                       if(initArgs.hasOwnProperty('onlazyload')){
@@ -122,10 +122,10 @@ var entityListContainer = (function () {
                         var groupEl=par.parents('.group:first');
                         var send={
                           key:groupEl.attr('name'),
-                          files_remain:par.attr('data-files'),
+                          files_remain:par.attr('data-filesremain'),
                           stopped_at_file:par.attr('data-stopfile'),
                           stopped_at_item:par.attr('data-stopitem'),
-                          more_in_this_file:par.attr('data-items')
+                          more_in_this_file:par.attr('data-itemsremain')
                         };
                         initArgs['onlazyload'](send,groupEl,ret);
                       }
