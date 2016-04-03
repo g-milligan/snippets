@@ -18,7 +18,7 @@
         loadData['type']='lazyload';
         jax.getData(loadData,function(data){
           if(data['status']==='ok'){
-            entity.addGroupItems(data['items']);
+            entity.addGroupItems(data['group']);
           }else{
             //***oops something went wrong
           }

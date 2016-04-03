@@ -56,6 +56,24 @@ var groups=[
   }
 ];
 
+var groupKeyIndexes={};
+var getGroupByKey=function(key){
+  var group;
+  if(!groupKeyIndexes.hasOwnProperty(key)){
+    for(var g=0;g<groups.length;g++){
+      if(groups[g].hasOwnProperty('key')){
+        var groupKey=groups[g]['key'];
+        groupKeyIndexes[groupKey]=g;
+      }
+    }
+  }
+  if(groupKeyIndexes.hasOwnProperty(key)){
+    var index=groupKeyIndexes[key];
+    group=groups[index];
+  }
+  return group;
+};
+
 //function that makes sure ajax requests came from this same page
 var isSameHost=function(testUrl){
   var isSame=false;
@@ -154,6 +172,8 @@ var readItemsFromFiles=function(dirPath,startFileNum,startItemNum,itemCount){
         //indicate the number of remaining files and items in this file
         ret.push({break:true,
           files_remain:filesRemain,
+          stopped_at_file:fileIndex+1,
+          stopped_at_item:addItemsFromFile,
           more_in_this_file:moreInFile
         });
         return ret;
@@ -215,8 +235,9 @@ app.post('/request-initial-data', function(req, res){
         resJson['groups']=[];
         //load start data for the groups
         for(var g=0;g<groups.length;g++){
-          var group=groups[g];
-          var groupData=getGroupData(group);
+          var group=groups[g]; var args={items:{get_items:false}};
+          if(g===0){ args['items']['get_items']=true; }
+          var groupData=getGroupData(group,args);
           if(groupData['status']==='ok'){
             resJson['groups'].push(groupData['group']);
           }else{
@@ -238,11 +259,38 @@ app.post('/request-lazyload', function(req, res){
     if(req.body.hasOwnProperty('type')){
       if(req.body['type']==='lazyload'){
         if(req.body.hasOwnProperty('key')){
-
-        //***var groupData=getGroupData(group);
-
-
-
+          if(req.body.hasOwnProperty('files_remain')){
+            if(req.body.hasOwnProperty('stopped_at_file')){
+              if(req.body.hasOwnProperty('stopped_at_item')){
+                if(req.body.hasOwnProperty('more_in_this_file')){
+                  var startAtFile=-1, startAtItem=1;
+                  //if there are any more items to read from the last read file
+                  if(req.body['more_in_this_file']>0){
+                    startAtFile=parseInt(req.body['stopped_at_file']);
+                    startAtItem=parseInt(req.body['stopped_at_item'])+1;
+                  }else if(req.body['files_remain']>0){ //any unread files remain?
+                    startAtFile=parseInt(req.body['stopped_at_file'])+1;
+                  }
+                  if(startAtFile>0){
+                    var group=getGroupByKey(req.body['key']);
+                    if(group!=undefined){
+                      var groupData=getGroupData(group,{
+                        items:{
+                          start_file_number:startAtFile,
+                          start_item_number:startAtItem
+                        }
+                      });
+                      if(groupData['status']==='ok'){
+                        resJson['group']=groupData['group'];
+                      }else{
+                        resJson['status']=groupData['status'];
+                      }
+                    }
+                  }
+                }else{ resJson['status']='error, missing property, "more_in_this_file" to indicate if there are any unread items in last read file'; }
+              }else{ resJson['status']='error, missing property, "stopped_at_item" to indicate the last read item from last read file'; }
+            }else{ resJson['status']='error, missing property, "stopped_at_file" to indicate the last read file'; }
+          }else{ resJson['status']='error, missing property, "files_remain" to indicate how many additional files remain'; }
         }else{ resJson['status']='error, missing property, "key" to denote which data directory'; }
       }else{ resJson['status']='error, wrong type in sender'; }
     }else{ resJson['status']='error, no type in sender'; }
