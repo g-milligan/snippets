@@ -168,9 +168,15 @@ var entityListContainer = (function () {
                             if(itemDisplay['pre']){ valEl.append('<pre></pre>'); valEl=valEl.children('pre:first'); }
                           }
                           valEl.html(item[itemDisplay['el']]);
+                          valEl.addClass('value');
                         }
                       }
                     }
+                    //add controls
+                    groupItem.append('<div class="btn-copy"><span class="ico"></span><span class="lbl">Copy</span></div>');
+                    groupItem.append('<div class="btn-edit"><span class="ico"></span><span class="lbl">Edit</span></div>');
+                    groupItem.append('<div class="btn-delete"><span class="ico"></span><span class="lbl">Delete</span></div>');
+
                     //move lazy load to the end
                     var lazyLoad=groupItems.children('.lazy-load-more');
                     groupItems.append(lazyLoad);
