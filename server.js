@@ -19,7 +19,7 @@ var XMLSerializer = xmldom.XMLSerializer;
 var groups=[
   {key:'txt',name:'Text',
     item_display:[
-      {el:'v',pre:true}
+      {el:'v'}
     ],
     fields:[
       {lbl:'Add/Edit Text'},
@@ -58,7 +58,7 @@ var groups=[
 
 var setGroupDefaults=function(group){
   if(!group.hasOwnProperty('item_display')){
-    group['item_display']=[{el:'v',pre:true}];
+    group['item_display']=[{el:'v'}];
   } return group;
 };
 
@@ -214,7 +214,7 @@ var getGroupData=function(group,args){
   if(!args['items'].hasOwnProperty('get_items')){ args['items']['get_items']=true; }
   if(!args['items'].hasOwnProperty('start_file_number')){ args['items']['start_file_number']=1; }
   if(!args['items'].hasOwnProperty('start_item_number')){ args['items']['start_item_number']=1; }
-  if(!args['items'].hasOwnProperty('item_count')){ args['items']['item_count']=4; }
+  if(!args['items'].hasOwnProperty('item_count')){ args['items']['item_count']=12; }
   var ret={status:'ok'};
   if(group.hasOwnProperty('key')){
     var dirp=rootDataDir+group['key'];
@@ -403,6 +403,15 @@ app.post('/set-data-item', function(req, res){
                       resJson['summary']='added: ' + writePath + ' - i' + iNum;
                     }else{
                       //writing to an existing item in an existing file
+
+                      console.log('save '+dir+' '+itemId);
+
+
+
+
+
+
+
 
 
 

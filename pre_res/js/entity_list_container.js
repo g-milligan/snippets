@@ -122,12 +122,7 @@ var entityListContainer = (function () {
                     whichItem.children('div').not('.btn-copy,.btn-edit,.btn-delete').each(function(){
                       var div=jQuery(this);
                       var divKey=div.attr('name');
-                      var divVal='';
-                      if(div.hasClass('value')){
-                        divVal=div.html();
-                      }else{
-                        divVal=div.find('.value:first').html();
-                      }
+                      var divVal=div.find('.value:first').val();
                       var menuField=menu.find('.scroll-fields .fields .field[name="'+divKey+'"]');
                       var ctl=menuField.find('.ctl:last');
                       var input=ctl.children(':first');
@@ -209,10 +204,9 @@ var entityListContainer = (function () {
                         var itemDisplay=args['item_display'][e];
                         if(item.hasOwnProperty(itemDisplay['el'])){
                           groupItem.append('<div name="'+itemDisplay['el']+'" class="'+itemDisplay['el']+'"></div>'); var valEl=groupItem.children('div:last');
-                          if(itemDisplay.hasOwnProperty('pre')){
-                            if(itemDisplay['pre']){ valEl.append('<pre></pre>'); valEl=valEl.children('pre:first'); }
-                          }
-                          valEl.html(item[itemDisplay['el']]);
+                          valEl.append('<textarea disabled="disabled"></textarea>');
+                          valEl=valEl.children('textarea:first');
+                          valEl.val(item[itemDisplay['el']]);
                           valEl.addClass('value');
                         }
                       }
@@ -391,7 +385,12 @@ var entityListContainer = (function () {
                   saveBtn.click(function(){
                     if(initArgs.hasOwnProperty('onsave')){
                       var fieldsData=ret['getEditFieldsData'](args['key'], {include:['el','save_value']});
-                      initArgs['onsave']([{key:args['key'],fields:fieldsData}], jQuery(this).parents('.group[name]:first'), ret);
+                      var sendData={key:args['key'],fields:fieldsData};
+                      var menu=jQuery(this).parents('.menu-edit-field:first');
+                      if(menu.attr('data-file') && menu.attr('data-id')){
+                        sendData['item_id']=menu.attr('data-file') + '/' + menu.attr('data-id');
+                      }
+                      initArgs['onsave']([sendData], jQuery(this).parents('.group[name]:first'), ret);
                     }
                     ret['closeEditGroupItemMenu'](jQuery(this).parents('.group[name]:first').attr('name'));
                   });
