@@ -196,9 +196,17 @@ var entityListContainer = (function () {
                   var dataId=item['id'];
                   var existingItem=groupItems.children('.item[data-file="'+dataFile+'"][data-id="'+dataId+'"]:first');
                   if(existingItem.length<1){
-                    //print the group item
+                    //print the new group item
                     groupItems.append('<div class="item" data-file="'+dataFile+'" data-id="'+dataId+'"></div>');
                     var groupItem=groupItems.children('.item:last');
+                    groupItem.hover(function(){
+                      jQuery(this).addClass('over');
+                    },function(){
+                      jQuery(this).removeClass('over');
+                    });
+                    groupItem.mouseleave(function(){
+                      jQuery(this).removeClass('over');
+                    });
                     if(args.hasOwnProperty('item_display')){
                       for(var e=0;e<args['item_display'].length;e++){
                         var itemDisplay=args['item_display'][e];
@@ -234,6 +242,24 @@ var entityListContainer = (function () {
                     //move lazy load to the end
                     var lazyLoad=groupItems.children('.lazy-load-more');
                     groupItems.append(lazyLoad);
+                  }else{
+                    //item already exists... update the values
+                    if(args.hasOwnProperty('item_display')){
+                      for(var e=0;e<args['item_display'].length;e++){
+                        var itemDisplay=args['item_display'][e];
+                        if(item.hasOwnProperty(itemDisplay['el'])){
+                          var update_value=item[itemDisplay['el']];
+                          var div=existingItem.children('[name="'+itemDisplay['el']+'"]');
+                          div.find('textarea.value').val(update_value);
+                        }
+                      }
+                    }
+                    setTimeout(function(){
+                      existingItem.addClass('updated');
+                      setTimeout(function(){
+                        existingItem.removeClass('updated');
+                      },900);
+                    },300);
                   }
                 }
               }

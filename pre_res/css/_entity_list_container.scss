@@ -69,11 +69,12 @@ $elc_default_font:Arial,'Helvetica Neue',Helvetica,sans-serif;
         .btn-copy,.btn-edit,.btn-delete{
           @extend .btn_default;position:absolute;font-size:20px;opacity:0;@include transition(opacity .2s linear);padding:7px 14px;
         }
-        &:hover{
+        &.over{
           background-color:#FFF1CD;
           .btn-copy,.btn-edit,.btn-delete{opacity:1;}
           .value{opacity:.3;};
         }
+        &.updated{background-color:#C5F0CA;border-color:#BEBEFF;}
         .btn-copy{top:($elc_headtabs_height / 4);left:($elc_headtabs_height / 4);background-color:#35358E;}
         .btn-edit{right:($elc_headtabs_height / 4);top:($elc_headtabs_height / 4);background-color:#186F21;}
         .btn-delete{left:($elc_headtabs_height / 4);bottom:($elc_headtabs_height / 4);background-color:#C96538;}

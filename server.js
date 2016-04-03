@@ -404,18 +404,35 @@ app.post('/set-data-item', function(req, res){
                     }else{
                       //writing to an existing item in an existing file
 
-                      console.log('save '+dir+' '+itemId);
+                      var itemFileId=itemId.split('/');
+                      var file=itemFileId[0]+'.xml'; var id='i'+itemFileId[1];
+                      var writePath=dirp+'/'+file;
+                      var xmlStr=fs.readFileSync(writePath, 'ascii');
+                      var xmlDoc=new dom().parseFromString(xmlStr);
+                      var itemNode=xmlDoc.documentElement.getElementsByTagName(id)[0];
 
-
-
-
-
-
-
-
-
-
-
+                      for(var f=0;f<req.body[d]['fields'].length;f++){
+                        if(req.body[d]['fields'][f].hasOwnProperty('el')){
+                          if(req.body[d]['fields'][f].hasOwnProperty('save_value')){
+                            var el=req.body[d]['fields'][f]['el'];
+                            var save_value=req.body[d]['fields'][f]['save_value'];
+                            var elChild=itemNode.getElementsByTagName(el)[0];
+                            itemNode.removeChild(elChild);
+                            var elChild=xmlDoc.createElement(el);
+                            itemNode.appendChild(elChild);
+                            var cdataVal=xmlDoc.createCDATASection(save_value);
+                            elChild.appendChild(cdataVal);
+                          }
+                        }
+                      }
+                      group['items'].push(file);
+                      group['items'].push(getDataItemJson(itemNode));
+                      resJson['groups'].push(group);
+                      //write changes
+                      var serializer=new XMLSerializer();
+                      var updatedXmlStr=serializer.serializeToString(xmlDoc);
+                      fs.writeFileSync(writePath, updatedXmlStr);
+                      resJson['summary']='updated: ' + writePath + ' - ' + id;
                     }
                   }
                 }
