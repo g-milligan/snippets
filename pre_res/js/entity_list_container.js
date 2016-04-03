@@ -8,6 +8,8 @@ var entityListContainer = (function () {
             viewbox='';
             if(this['svg'][key].hasOwnProperty('viewbox')){
               viewbox=' viewBox="'+this['svg'][key]['viewbox']+'"';
+            }else{
+              viewbox=' viewBox="0 0 640 640"';
             }
           }else{ viewbox=' viewBox="'+viewbox+'"'; }
           str='<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"'+viewbox+'><path d="'+this['svg'][key]['path']+'"></path></svg>';
@@ -20,15 +22,12 @@ var entityListContainer = (function () {
         path:'M88.996 423.003c12.966 12.966 33.983 12.966 46.948 0l58.584-58.584c24.085 15.452 52.555 24.657 83.296 24.657 85.543 0 154.901-69.346 154.901-154.901s-69.358-154.9-154.901-154.9c-85.554 0-154.901 69.347-154.901 154.9 0 30.729 9.217 59.211 24.658 83.308l-58.584 58.584c-12.966 12.966-12.966 33.971 0 46.936zM277.826 123.529c61.103 0 110.644 49.529 110.644 110.643s-49.541 110.644-110.644 110.644c-61.113 0-110.644-49.531-110.644-110.644s49.531-110.643 110.644-110.643z'
       },
       x:{
-        viewbox:'0 0 640 640',
         path:'M498.433 449.321l-113.156-129.321 113.156-129.321c19.242-19.242 19.242-50.424 0-69.624-19.242-19.203-50.424-19.203-69.624 0l-108.807 124.357-108.766-124.316c-19.242-19.242-50.424-19.242-69.624 0-19.203 19.242-19.203 50.424 0 69.624l113.114 129.281-113.156 129.321c-19.203 19.242-19.203 50.341 0 69.544 19.242 19.242 50.424 19.242 69.624 0l108.808-124.275 108.766 124.275c19.242 19.242 50.424 19.242 69.624 0s19.242-50.3 0.041-69.544z'
       },
       plus:{
-        viewbox:'0 0 640 640',
         path:'M515.052 282.482h-157.572v-157.572c0-20.709-16.77-22.51-37.518-22.51-20.709 0-37.517 1.763-37.517 22.51v157.572h-157.536c-20.748 0-22.51 16.808-22.51 37.518s1.762 37.518 22.51 37.518h157.536v157.572c0 20.709 16.808 22.51 37.517 22.51 20.748 0 37.518-1.801 37.518-22.51v-157.572h157.572c20.748 0 22.548-16.808 22.548-37.518s-1.801-37.518-22.548-37.518z'
       },
       save:{
-        viewbox:'0 0 640 640',
         path:'M464.816 96h-312.816c-30.8 0-56 25.2-56 56v336c0 30.8 25.2 56 56 56h336c30.8 0 56-25.2 56-56v-304.444l-79.184-87.556zM432 264c0 15.4-12.6 28-28 28h-168c-15.4 0-28-12.6-28-28v-140h224v140zM404 152h-56v112h56v-112z'
       }
     },
@@ -78,20 +77,37 @@ var entityListContainer = (function () {
 
           }
         };
+        ret['isOpenEditGroupItemMenu']=function(key){
+          var isOpen;
+          if(key!=undefined){
+            var group=this['wrap'].find('.entities_body .groups .group[name="'+key+'"]:first');
+            if(group.length>0){
+              if(group.hasClass('solo-menu-edit-field')){
+                isOpen=true;
+              }else{
+                isOpen=false;
+              }
+            }
+          } return isOpen;
+        };
         ret['openEditGroupItemMenu']=function(key){
           if(key!=undefined){
-
-
-
-
+            var group=this['wrap'].find('.entities_body .groups .group[name="'+key+'"]:first');
+            if(group.length>0){
+              if(!group.hasClass('solo-menu-edit-field')){
+                group.addClass('solo-menu-edit-field');
+              }
+            }
           }
         };
         ret['closeEditGroupItemMenu']=function(key){
           if(key!=undefined){
-
-
-
-
+            var group=this['wrap'].find('.entities_body .groups .group[name="'+key+'"]:first');
+            if(group.length>0){
+              if(group.hasClass('solo-menu-edit-field')){
+                group.removeClass('solo-menu-edit-field');
+              }
+            }
           }
         };
         //function to add group item
@@ -343,7 +359,12 @@ var entityListContainer = (function () {
                   var addBtn=headControl.find('.actions .add:first');
                   addBtn.click(function(e){
                     e.preventDefault(); var c=jQuery(this).parents('.control:first');
-                    ret['openEditGroupItemMenu'](c.attr('name'));
+                    var isOpen=ret['isOpenEditGroupItemMenu'](c.attr('name'));
+                    if(isOpen){
+                      ret['closeEditGroupItemMenu'](c.attr('name'));
+                    }else{
+                      ret['openEditGroupItemMenu'](c.attr('name'));
+                    }
                   });
                   //set active group, if none are set as active already
                   if(isFirstGroup){ headGroup.click(); }

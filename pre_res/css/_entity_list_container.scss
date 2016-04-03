@@ -6,6 +6,12 @@ $elc_headctls_searchcancel_width:50px;
 
 $elc_default_font:Arial,'Helvetica Neue',Helvetica,sans-serif;
 
+@mixin toggle_group_panel($class){
+  .entity_lists_wrapper .group .#{$class}{display:none;}
+  .entity_lists_wrapper .group.solo-#{$class} > *{display:none;}
+  .entity_lists_wrapper .group.solo-#{$class} > .#{$class}{display:block;}
+}
+
 /*basic layout styles*/
 .entity_lists_wrapper{
   font-family:$elc_default_font;position:relative;box-sizing:border-box;-moz-box-sizing:border-box;
@@ -88,3 +94,5 @@ $elc_default_font:Arial,'Helvetica Neue',Helvetica,sans-serif;
     }
   }
 }
+
+@include toggle_group_panel('menu-edit-field');
