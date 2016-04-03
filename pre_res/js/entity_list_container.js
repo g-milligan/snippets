@@ -29,6 +29,18 @@ var entityListContainer = (function () {
       },
       save:{
         path:'M464.816 96h-312.816c-30.8 0-56 25.2-56 56v336c0 30.8 25.2 56 56 56h336c30.8 0 56-25.2 56-56v-304.444l-79.184-87.556zM432 264c0 15.4-12.6 28-28 28h-168c-15.4 0-28-12.6-28-28v-140h224v140zM404 152h-56v112h56v-112z'
+      },
+      edit:{
+        viewbox:'0 0 512 512',
+        path:'M410 432h-308c-12.15 0-22-9.839-22-22v-308c0-12.16 9.85-22 22-22h220l-44 44h-154v264h264v-154l44-44v220c0 12.161-9.851 22-22 22zM168 344v-66l198-198h22l44 44v22l-198 198h-66zM267 267l121-121-22-22-121 121 22 22zM212 278l-22 22v22h22l22-22-22-22z'
+      },
+      copy:{
+        viewbox:'0 0 512 512',
+        path:'M300 168v-88h-154l-66 66v198h132v88h220v-264h-132zM146 111.112v34.888h-34.888l34.888-34.888zM102 322v-154h66v-66h110v66l-66 66v88h-110zM278 199.113v34.887h-34.887l34.887-34.887zM410 410h-176v-154h66v-66h110v220z'
+      },
+      trash:{
+        viewbox:'0 0 512 512',
+        path:'M360.284 116.954h-208.569c-19.198 0-34.761 15.563-34.761 34.761v11.587h278.091v-11.587c0-19.198-15.563-34.761-34.762-34.761zM299.568 93.779l5.111 36.573h-97.358l5.111-36.572h87.136zM302.349 70.606h-92.697c-9.559 0-18.463 7.746-19.786 17.214l-6.775 48.493c-1.325 9.468 5.416 17.214 14.975 17.214h115.872c9.559 0 16.298-7.746 14.976-17.214l-6.775-48.493c-1.325-9.468-10.227-17.214-19.786-17.214v0zM366.078 186.477h-220.156c-12.746 0-22.23 10.386-21.076 23.079l18.978 208.759c1.154 12.693 12.526 23.078 25.273 23.078h173.808c12.746 0 24.118-10.385 25.272-23.078l18.978-208.759c1.154-12.694-8.329-23.079-21.076-23.079zM209.651 395.046h-34.762l-11.587-162.22h46.349v162.22zM279.174 395.046h-46.349v-162.22h46.349v162.22zM337.11 395.046h-34.762v-162.22h46.349l-11.587 162.22z'
       }
     },
     init:function(initArgs){
@@ -77,6 +89,12 @@ var entityListContainer = (function () {
 
           }
         };
+        ret['deleteGroupItem']=function(whichItem){
+
+        };
+        ret['copyGroupItemValue']=function(whichItem){
+
+        };
         ret['isOpenEditGroupItemMenu']=function(key){
           var isOpen;
           if(key!=undefined){
@@ -90,12 +108,33 @@ var entityListContainer = (function () {
             }
           } return isOpen;
         };
-        ret['openEditGroupItemMenu']=function(key){
+        ret['openEditGroupItemMenu']=function(key,whichItem){
           if(key!=undefined){
             var group=this['wrap'].find('.entities_body .groups .group[name="'+key+'"]:first');
             if(group.length>0){
               if(!group.hasClass('solo-menu-edit-field')){
                 group.addClass('solo-menu-edit-field');
+                if(whichItem!=undefined){
+                  if(whichItem.attr('data-file') && whichItem.attr('data-id')){
+                    var menu=group.find('.menu-edit-field:last');
+                    menu.attr('data-file',whichItem.attr('data-file'));
+                    menu.attr('data-id',whichItem.attr('data-id'));
+                    whichItem.children('div').not('.btn-copy,.btn-edit,.btn-delete').each(function(){
+                      var div=jQuery(this);
+                      var divKey=div.attr('name');
+                      var divVal='';
+                      if(div.hasClass('value')){
+                        divVal=div.html();
+                      }else{
+                        divVal=div.find('.value:first').html();
+                      }
+                      var menuField=menu.find('.scroll-fields .fields .field[name="'+divKey+'"]');
+                      var ctl=menuField.find('.ctl:last');
+                      var input=ctl.children(':first');
+                      input.val(divVal);
+                    });
+                  }
+                }
               }
             }
           }
@@ -106,6 +145,12 @@ var entityListContainer = (function () {
             if(group.length>0){
               if(group.hasClass('solo-menu-edit-field')){
                 group.removeClass('solo-menu-edit-field');
+                var menu=group.find('.menu-edit-field:last');
+                menu.attr('data-file','').attr('data-id','');
+                var ctls=menu.find('.scroll-fields .fields .field .ctl');
+                ctls.each(function(){
+                  jQuery(this).children('input,textarea').val('');
+                });
               }
             }
           }
@@ -134,7 +179,7 @@ var entityListContainer = (function () {
                   var stoppedAtFile=item['stopped_at_file'];
                   var stoppedAtItem=item['stopped_at_item'];
                   if(files_remain>0 || moreInThisFile>0){
-                    groupItems.append('<div data-stopfile="'+stoppedAtFile+'" data-stopitem="'+stoppedAtItem+'" data-filesremain="'+files_remain+'" data-itemsremain="'+moreInThisFile+'" class="lazy-load-more"><div class="btn">More</div></div>');
+                    groupItems.append('<div data-stopfile="'+stoppedAtFile+'" data-stopitem="'+stoppedAtItem+'" data-filesremain="'+files_remain+'" data-itemsremain="'+moreInThisFile+'" class="lazy-load-more"><div class="btn"><span class="ico">'+elc['getSvg']('plus')+'</span><span class="lbl">More</span></div></div>');
                     var moreBtn=groupItems.children('.lazy-load-more:first').children('.btn:first');
                     moreBtn.click(function(){
                       if(initArgs.hasOwnProperty('onlazyload')){
@@ -163,7 +208,7 @@ var entityListContainer = (function () {
                       for(var e=0;e<args['item_display'].length;e++){
                         var itemDisplay=args['item_display'][e];
                         if(item.hasOwnProperty(itemDisplay['el'])){
-                          groupItem.append('<div class="'+itemDisplay['el']+'"></div>'); var valEl=groupItem.children('div:last');
+                          groupItem.append('<div name="'+itemDisplay['el']+'" class="'+itemDisplay['el']+'"></div>'); var valEl=groupItem.children('div:last');
                           if(itemDisplay.hasOwnProperty('pre')){
                             if(itemDisplay['pre']){ valEl.append('<pre></pre>'); valEl=valEl.children('pre:first'); }
                           }
@@ -173,10 +218,25 @@ var entityListContainer = (function () {
                       }
                     }
                     //add controls
-                    groupItem.append('<div class="btn-copy"><span class="ico"></span><span class="lbl">Copy</span></div>');
-                    groupItem.append('<div class="btn-edit"><span class="ico"></span><span class="lbl">Edit</span></div>');
-                    groupItem.append('<div class="btn-delete"><span class="ico"></span><span class="lbl">Delete</span></div>');
-
+                    var doEdit=function(btn){
+                      var theItem=btn.parents('.item:first');
+                      ret['openEditGroupItemMenu'](theItem.parents('.group:first').attr('name'),theItem);
+                    };
+                    groupItem.append('<div class="btn-copy"><span class="ico">'+elc['getSvg']('copy')+'</span><span class="lbl">Copy</span></div>');
+                    groupItem.append('<div class="btn-edit"><span class="ico">'+elc['getSvg']('edit')+'</span><span class="lbl">Edit</span></div>');
+                    groupItem.append('<div class="btn-delete"><span class="ico">'+elc['getSvg']('trash')+'</span><span class="lbl">Delete</span></div>');
+                    groupItem.children('.btn-copy:last').click(function(){
+                      ret['copyGroupItemValue'](jQuery(this).parents('.item:first'));
+                    });
+                    groupItem.children('.btn-edit:last').click(function(){
+                      doEdit(jQuery(this));
+                    });
+                    groupItem.find('.v:first').click(function(){
+                      doEdit(jQuery(this).parent().children('.btn-edit:last'));
+                    });
+                    groupItem.children('.btn-delete:last').click(function(){
+                      ret['deleteGroupItem'](jQuery(this).parents('.item:first'));
+                    });
                     //move lazy load to the end
                     var lazyLoad=groupItems.children('.lazy-load-more');
                     groupItems.append(lazyLoad);
