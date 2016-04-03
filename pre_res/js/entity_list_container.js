@@ -125,6 +125,10 @@ var entityListContainer = (function () {
                 }
                 //if this is a lazy load indicator... to be continued
                 if(item.hasOwnProperty('break')){
+                  //remove previous lazyloader
+                  var lazyLoad=groupItems.children('.lazy-load-more');
+                  lazyLoad.remove();
+                  //get the estimated remaining unprocessed items' info
                   var files_remain=item['files_remain'];
                   var moreInThisFile=item['more_in_this_file'];
                   var stoppedAtFile=item['stopped_at_file'];
@@ -152,7 +156,6 @@ var entityListContainer = (function () {
                   var dataId=item['id'];
                   var existingItem=groupItems.children('.item[data-file="'+dataFile+'"][data-id="'+dataId+'"]:first');
                   if(existingItem.length<1){
-                    groupItems.children('.lazy-load-more').remove();
                     //print the group item
                     groupItems.append('<div class="item" data-file="'+dataFile+'" data-id="'+dataId+'"></div>');
                     var groupItem=groupItems.children('.item:last');
@@ -168,6 +171,9 @@ var entityListContainer = (function () {
                         }
                       }
                     }
+                    //move lazy load to the end
+                    var lazyLoad=groupItems.children('.lazy-load-more');
+                    groupItems.append(lazyLoad);
                   }
                 }
               }
